@@ -1,0 +1,39 @@
+body {
+    position: absolute;
+    margin: auto;
+    top: 40%;
+    left: 45%;
+}
+
+h1 {
+    position: relative;
+    left: -20%;
+}
+
+#textbox {
+    border-color: black;
+}
+
+.input {
+    background-color: cadetblue;
+    position: absolute;
+}
+
+.keyboard {
+    height: 2cm;
+    width: 2cm;
+    outline-color: tomato;
+    position: relative;
+    left: 25%;
+}
+
+button {
+    font-size: 0.5rem;
+    padding: 0px;
+    margin: 0px;
+}
+
+#myCanvas {
+    display: none;
+    margin-bottom: -4px;
+}
