@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script type="module">
+    const videoElement = document.getElementsByClassName('input_video')[0];
+    const canvasElement = document.getElementsByClassName('output_canvas')[0];
+    const canvasCtx = canvasElement.getContext('2d');
+    
+    let i = 0;
+    let maxIter = 100;
+        let thumbs = 0,
+            index = 0,
+            middle = 0,
+            ring = 0,
+            pinky = 0;
+
+    function onResults(results) {
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      canvasCtx.drawImage(
+          results.image, 0, 0, canvasElement.width, canvasElement.height);
+      if (results.multiHandLandmarks) {
+        for (const landmarks of results.multiHandLandmarks) {
+          drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
+                         {color: '#00FF00', lineWidth: 5});
+          drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
+
+          //console.log('x is',landmarks[0].x);
+          //console.log('y is',landmarks[0].y);
+          //console.log("thumb to wrist:", Math.hypot(landmarks[0].x - landmarks[4].x, landmarks[0].y - landmarks[4].y));
+          //console.log("index to wrist:", Math.hypot(landmarks[0].x - landmarks[8].x, landmarks[0].y - landmarks[8].y));
+          //console.log("middle to wrist:", Math.hypot(landmarks[0].x - landmarks[12].x, landmarks[0].y - landmarks[12].y));
+          //console.log("ring to wrist:", Math.hypot(landmarks[0].x - landmarks[16].x, landmarks[0].y - landmarks[16].y));
+          //console.log("pinky to wrist:", Math.hypot(landmarks[0].x - landmarks[20].x, landmarks[0].y - landmarks[20].y));
+          
+          thumbs = Math.hypot(landmarks[0].x - landmarks[4].x, landmarks[0].y - landmarks[4].y);
+          index = Math.hypot(landmarks[0].x - landmarks[8].x, landmarks[0].y - landmarks[8].y);
+          middle = Math.hypot(landmarks[0].x - landmarks[12].x, landmarks[0].y - landmarks[12].y);
+          ring = Math.hypot(landmarks[0].x - landmarks[16].x, landmarks[0].y - landmarks[16].y);
+          pinky = Math.hypot(landmarks[0].x - landmarks[20].x, landmarks[0].y - landmarks[20].y);
+        }
+
+        let fingers = [thumbs/maxIter, index/maxIter, middle/maxIter, ring/maxIter, pinky/maxIter];
+        // MAKE SURE TO USE THE FIRST PRINT TO CONSOLE AND RELOAD PAGE AFTER CLASSIFICATION
+        console.log(fingers);
+      canvasCtx.restore();
+    }
+    
+    const hands = new Hands({locateFile: (file) => {
+      return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+    }});
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    hands.onResults(onResults);
+    
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({image: videoElement});
+      },
+      width: 1280,
+      height: 720
+    });
+    camera.start();
+    </script>
+</head>
+
+<body>
+  <div class="container">
+    <video class="input_video"></video>
+    <canvas class="output_canvas" width="1280px" height="720px"></canvas>
+  </div>
+</body>
+</html>
+
