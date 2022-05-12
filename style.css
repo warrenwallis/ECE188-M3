@@ -7,11 +7,20 @@ body {
 
 h1 {
     position: relative;
-    left: -20%;
 }
 
 #textbox {
     border-color: black;
+}
+
+.container {
+    position: absolute;
+    top: 200px;
+}
+
+.output_canvas {
+    position: relative;
+    display: none;
 }
 
 .input {
@@ -36,4 +45,9 @@ button {
 #myCanvas {
     display: none;
     margin-bottom: -4px;
+}
+
+.input_video {
+    color: aqua;
+    display: none;
 }

@@ -38,6 +38,7 @@ $(document).ready(() => {
 //
 // with the addition of emoji's, have a new window (8) that hosts the canvas and hides all the button except back, space, delete
 // keep pre-defined objects for emoji, so map triangle to emoji1, x to emoji2, rectangle to emoji3, circle to emoji4, check to emoji5
+// with the addition of camera, have a new window (9)
 
 TINYTYPE.showUI = function () {
     console.log('called showUI function');
@@ -47,7 +48,7 @@ TINYTYPE.showUI = function () {
             $('#button0').text('AEIOUY');
             $('#button1').text('BCDF' + String.fromCodePoint(0x1F602));
             $('#button2').text('. GHJK .');
-            $('#button3').text('. LMNP .');
+            $('#button3').text('LMNP' + String.fromCodePoint(0x1F4F8));
             $('#button4').text('. QRST .');
             $('#button5').text('. VWXZ .');
             break;
@@ -85,7 +86,7 @@ TINYTYPE.showUI = function () {
             $('#button2').text('M');
             $('#button3').text('P');
             $('#button4').text('BACK');
-            $('#button5').text('');
+            $('#button5').text('CAM');
             break;
         case 5:
             console.log('page == 5');
@@ -115,6 +116,15 @@ TINYTYPE.showUI = function () {
             $('#button5').text('BACK');
             $('#myCanvas').show();
             initialize();
+            break;
+        case 8:
+            console.log('page == 8');
+            $('#button0').hide();
+            $('#button1').hide();
+            $('#button2').hide();
+            $('#button3').hide();
+            $('#button5').text('ACCEPT');
+            $('.output_canvas').show();
             break;
     }
     $('#textbox').focus();
@@ -184,6 +194,15 @@ TINYTYPE.clickButton4 = function (e) {
         case 1:
             $('#textbox').val($('#textbox').val() + $('#button4').text());
             page = 0;
+            break;
+        case 8:
+            $('#button0').show();
+            $('#button1').show();
+            $('#button2').show();
+            $('#button3').show();
+            $('.output_canvas').hide();
+            page = 4;
+            break;
         default:
             page = 0;
             break;
@@ -205,6 +224,10 @@ TINYTYPE.clickButton5 = function (e) {
             console.log("its emoji time!");
             page = 7;
             break;
+        case 4:
+            console.log('its camera time!');
+            page = 8;
+            break;
         case 7:
             $('#button0').show();
             $('#button1').show();
@@ -213,6 +236,14 @@ TINYTYPE.clickButton5 = function (e) {
             $('#button4').show();
             $('#myCanvas').hide();
             page = 2;
+            break;
+        case 8:
+            $('#button0').show();
+            $('#button1').show();
+            $('#button2').show();
+            $('#button3').show();
+            $('.output_canvas').hide();
+            page = 0;
             break;
         default:
             break;
