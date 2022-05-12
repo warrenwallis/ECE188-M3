@@ -4,6 +4,104 @@
 
 var TINYTYPE = TINYTYPE || {}
 let page = 0, isDown, points, r, g, rc;
+let thumbs = 0,
+    index = 0,
+    middle = 0,
+    ring = 0,
+    pinky = 0;
+let i = 0, token = 0, which;
+const videoElement = document.getElementsByClassName('input_video')[0];
+const canvasElement = document.getElementsByClassName('output_canvas')[0];
+const canvasCtx = canvasElement.getContext('2d');
+
+function onResults(results) {
+    canvasCtx.save();
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(
+        results.image, 0, 0, canvasElement.width, canvasElement.height);
+    if (results.multiHandLandmarks) {
+      for (const landmarks of results.multiHandLandmarks) {
+        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
+                       {color: '#00FF00', lineWidth: 5});
+        drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
+
+        //console.log('x is',landmarks[0].x);
+        //console.log('y is',landmarks[0].y);
+        //console.log("thumb to wrist:", Math.hypot(landmarks[0].x - landmarks[4].x, landmarks[0].y - landmarks[4].y));
+        //console.log("index to wrist:", Math.hypot(landmarks[0].x - landmarks[8].x, landmarks[0].y - landmarks[8].y));
+        //console.log("middle to wrist:", Math.hypot(landmarks[0].x - landmarks[12].x, landmarks[0].y - landmarks[12].y));
+        //console.log("ring to wrist:", Math.hypot(landmarks[0].x - landmarks[16].x, landmarks[0].y - landmarks[16].y));
+        //console.log("pinky to wrist:", Math.hypot(landmarks[0].x - landmarks[20].x, landmarks[0].y - landmarks[20].y));
+        
+        thumbs = Math.hypot(landmarks[0].x - landmarks[4].x, landmarks[0].y - landmarks[4].y);
+        index = Math.hypot(landmarks[0].x - landmarks[8].x, landmarks[0].y - landmarks[8].y);
+        middle = Math.hypot(landmarks[0].x - landmarks[12].x, landmarks[0].y - landmarks[12].y);
+        ring = Math.hypot(landmarks[0].x - landmarks[16].x, landmarks[0].y - landmarks[16].y);
+        pinky = Math.hypot(landmarks[0].x - landmarks[20].x, landmarks[0].y - landmarks[20].y);
+      }
+
+      let fingers = [thumbs, index, middle, ring, pinky];
+      let averages = [0.228855925713142, 0.33346074055961, 0.322248931844184, 0.300157791079334, 0.256935637326885];
+      let on = [false, false, false, false, false];
+
+      for (const [index, element] of fingers.entries()) {
+          if (element > averages[index])
+              on[index] = true;
+      }
+
+      which = '';
+      if (!on[0] && on[4] && on[3]) {
+          console.log(4);
+          which = String.fromCodePoint(0x1F602);
+      }
+      else if (on[2] && !on[4]) {
+          console.log(3);
+          which = String.fromCodePoint(0x1F48B);;
+      }
+      else if (on[1] && !on[3]) {
+          console.log(2);
+          which = String.fromCodePoint(0x1F497);
+      }
+      else if (on[0] && on[4]) {
+          console.log(5);
+          which = String.fromCodePoint(0x1F351);
+      }
+      else if (on[0]) {
+          console.log(1);
+          which = String.fromCodePoint(0x1F346);
+      }
+      else {
+          console.log(0);
+          which = '';
+      }
+    }
+    //console.log('token', token);
+    if (token && which != '') {
+        $('#textbox').val($('#textbox').val() + which);
+        token = 0;
+    }
+    canvasCtx.restore();
+  }
+  
+  const hands = new Hands({locateFile: (file) => {
+    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+  }});
+  hands.setOptions({
+    maxNumHands: 2,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+  });
+  hands.onResults(onResults);
+  
+  const camera = new Camera(videoElement, {
+    onFrame: async () => {
+      await hands.send({image: videoElement});
+    },
+    width: 1280,
+    height: 720
+  });
+  camera.start();
 
 $(document).ready(() => {
     //
@@ -201,6 +299,7 @@ TINYTYPE.clickButton4 = function (e) {
             $('#button2').show();
             $('#button3').show();
             $('.output_canvas').hide();
+            token = 0;
             page = 4;
             break;
         default:
@@ -226,6 +325,7 @@ TINYTYPE.clickButton5 = function (e) {
             break;
         case 4:
             console.log('its camera time!');
+            token = 1;
             page = 8;
             break;
         case 7:
@@ -243,6 +343,7 @@ TINYTYPE.clickButton5 = function (e) {
             $('#button2').show();
             $('#button3').show();
             $('.output_canvas').hide();
+            token = 0;
             page = 0;
             break;
         default:
@@ -254,6 +355,7 @@ TINYTYPE.clickButton5 = function (e) {
 
 TINYTYPE.clickButton6 = function (e) {
     $('#textbox').val($('#textbox').val() + ' ');
+    token = 1;
     TINYTYPE.showUI();
 }
 
@@ -261,6 +363,7 @@ TINYTYPE.clickButton7 = function (e) {
     let result = $('#textbox').val();
     let size = result.length;
     $('#textbox').val(result.substring(0, size - 1));
+    token = 1;
     TINYTYPE.showUI();
 }
 
